@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Chalet Booking System"
+description = "A warm, responsive chalet reservation platform with public chalet discovery, date-aware booking requests, map-based details, and a secure admin workspace for inventory, bookings, and revenue."
+version = "1.0.0"
+id = "artifacts/chalet-booking"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19482
+
+[services.development]
+run = "pnpm --filter @workspace/chalet-booking run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/chalet-booking", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/chalet-booking/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19482"
+BASE_PATH = "/"

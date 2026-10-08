@@ -1,0 +1,505 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API for Cedar & Stone chalet reservations and admin operations
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+  - name: chalets
+  - name: bookings
+  - name: admin
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /chalets:
+    get:
+      operationId: listChalets
+      tags: [chalets]
+      summary: List public chalets
+      responses:
+        "200":
+          description: Chalet list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Chalet"
+    post:
+      operationId: createChalet
+      tags: [admin]
+      summary: Create a chalet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChaletInput"
+      responses:
+        "201":
+          description: Created chalet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Chalet"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /chalets/{id}:
+    get:
+      operationId: getChalet
+      tags: [chalets]
+      summary: Get chalet details
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Chalet details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Chalet"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateChalet
+      tags: [admin]
+      summary: Update a chalet
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChaletUpdate"
+      responses:
+        "200":
+          description: Updated chalet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Chalet"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteChalet
+      tags: [admin]
+      summary: Delete a chalet
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /chalets/{id}/availability:
+    get:
+      operationId: getChaletAvailability
+      tags: [chalets]
+      summary: Get blocked dates for a chalet
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Availability data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Availability"
+  /bookings:
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Submit a pending booking request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingInput"
+      responses:
+        "201":
+          description: Pending booking request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "409":
+          description: Requested dates overlap an accepted or completed booking
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Sign in an administrator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginInput"
+      responses:
+        "200":
+          description: Authenticated admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Admin"
+        "401":
+          description: Invalid credentials
+  /admin/logout:
+    post:
+      operationId: adminLogout
+      tags: [admin]
+      summary: Sign out an administrator
+      responses:
+        "204":
+          description: Signed out
+  /admin/session:
+    get:
+      operationId: getAdminSession
+      tags: [admin]
+      summary: Get current admin session
+      responses:
+        "200":
+          description: Current admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Admin"
+        "401":
+          description: Not authenticated
+  /admin/dashboard:
+    get:
+      operationId: getAdminDashboard
+      tags: [admin]
+      summary: Get dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/bookings:
+    get:
+      operationId: listAdminBookings
+      tags: [admin]
+      summary: List bookings for the admin panel
+      responses:
+        "200":
+          description: Booking list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/bookings/{id}/status:
+    patch:
+      operationId: updateBookingStatus
+      tags: [admin]
+      summary: Change booking status
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingStatusInput"
+      responses:
+        "200":
+          description: Updated booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/admins:
+    get:
+      operationId: listAdmins
+      tags: [admin]
+      summary: List administrators
+      responses:
+        "200":
+          description: Administrators
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Admin"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createAdmin
+      tags: [admin]
+      summary: Create an administrator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminInput"
+      responses:
+        "201":
+          description: Created administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Admin"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/admins/{id}/password:
+    patch:
+      operationId: changeAdminPassword
+      tags: [admin]
+      summary: Change an administrator password
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordInput"
+      responses:
+        "204":
+          description: Password changed
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /storage/uploads/request-url:
+    post:
+      operationId: requestUploadUrl
+      tags: [admin]
+      summary: Request a presigned image upload URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadRequest"
+      responses:
+        "200":
+          description: Presigned upload details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+components:
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+  responses:
+    Unauthorized:
+      description: Authentication required
+    NotFound:
+      description: Resource not found
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+    Chalet:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        slug: { type: string }
+        description: { type: string }
+        capacity: { type: integer }
+        weekdayPrice: { type: number }
+        weekendPrice: { type: number }
+        latitude: { type: number }
+        longitude: { type: number }
+        mainImageUrl: { type: string }
+        extraImageUrls:
+          type: array
+          items: { type: string }
+        createdAt: { type: string, format: date-time }
+      required:
+        - id
+        - title
+        - slug
+        - description
+        - capacity
+        - weekdayPrice
+        - weekendPrice
+        - latitude
+        - longitude
+        - mainImageUrl
+        - extraImageUrls
+        - createdAt
+    ChaletInput:
+      type: object
+      properties:
+        title: { type: string, minLength: 2 }
+        description: { type: string, minLength: 10 }
+        capacity: { type: integer, minimum: 1 }
+        weekdayPrice: { type: number, minimum: 0 }
+        weekendPrice: { type: number, minimum: 0 }
+        latitude: { type: number, minimum: -90, maximum: 90 }
+        longitude: { type: number, minimum: -180, maximum: 180 }
+        mainImageUrl: { type: string, minLength: 1 }
+        extraImageUrls:
+          type: array
+          items: { type: string }
+      required:
+        - title
+        - description
+        - capacity
+        - weekdayPrice
+        - weekendPrice
+        - latitude
+        - longitude
+        - mainImageUrl
+        - extraImageUrls
+    ChaletUpdate:
+      allOf:
+        - $ref: "#/components/schemas/ChaletInput"
+    Availability:
+      type: object
+      properties:
+        blockedDates:
+          type: array
+          items: { type: string, format: date }
+      required: [blockedDates]
+    Booking:
+      type: object
+      properties:
+        id: { type: integer }
+        chaletId: { type: integer }
+        chaletTitle: { type: string }
+        guestName: { type: string }
+        phone: { type: string }
+        checkIn: { type: string, format: date-time }
+        checkOut: { type: string, format: date-time }
+        totalPrice: { type: number }
+        status:
+          type: string
+          enum: [Pending, Accepted, Completed, Cancelled]
+        createdAt: { type: string, format: date-time }
+      required:
+        - id
+        - chaletId
+        - chaletTitle
+        - guestName
+        - phone
+        - checkIn
+        - checkOut
+        - totalPrice
+        - status
+        - createdAt
+    BookingInput:
+      type: object
+      properties:
+        chaletId: { type: integer, minimum: 1 }
+        guestName: { type: string, minLength: 2 }
+        phone: { type: string, minLength: 5 }
+        checkIn: { type: string, format: date-time }
+        checkOut: { type: string, format: date-time }
+      required: [chaletId, guestName, phone, checkIn, checkOut]
+    BookingStatusInput:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [Pending, Accepted, Completed, Cancelled]
+      required: [status]
+    Admin:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+        createdAt: { type: string, format: date-time }
+      required: [id, name, email, createdAt]
+    AdminInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 2 }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+      required: [name, email, password]
+    AdminLoginInput:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 1 }
+      required: [email, password]
+    PasswordInput:
+      type: object
+      properties:
+        password: { type: string, minLength: 8 }
+      required: [password]
+    Dashboard:
+      type: object
+      properties:
+        revenue: { type: number }
+        pendingCount: { type: integer }
+        acceptedCount: { type: integer }
+        completedCount: { type: integer }
+        cancelledCount: { type: integer }
+        chaletCount: { type: integer }
+        recentBookings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Booking"
+      required:
+        - revenue
+        - pendingCount
+        - acceptedCount
+        - completedCount
+        - cancelledCount
+        - chaletCount
+        - recentBookings
+    UploadRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        size: { type: integer, minimum: 1, maximum: 10485760 }
+        contentType: { type: string, pattern: "^image/" }
+      required: [name, size, contentType]
+    UploadResponse:
+      type: object
+      properties:
+        uploadURL: { type: string, format: uri }
+        objectPath: { type: string }
+        metadata:
+          $ref: "#/components/schemas/UploadRequest"
+      required: [uploadURL, objectPath, metadata]
