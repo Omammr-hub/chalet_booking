@@ -48,14 +48,14 @@ function getSessionId(value: string | undefined): number | null {
 export function setAdminSession(res: Response, id: number): void {
   res.cookie(COOKIE_NAME, createSession(id), {
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: "none",
+    secure: true,
     maxAge: SESSION_TTL_SECONDS * 1000,
   });
 }
 
 export function clearAdminSession(res: Response): void {
-  res.clearCookie(COOKIE_NAME);
+  res.clearCookie(COOKIE_NAME, { sameSite: "none", secure: true });
 }
 
 export async function getAdminFromRequest(req: Request): Promise<Admin | null> {
