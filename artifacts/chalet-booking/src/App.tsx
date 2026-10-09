@@ -125,7 +125,7 @@ function ChaletDetail() {
   const create = useCreateBooking(); const [notice, setNotice] = useState(''); const [error, setError] = useState('');
   const emptyForm = { guestName: '', phone: '', checkIn: '', checkOut: '', checkInTime: '15:00', checkOutTime: '11:00' };
   const [form, setForm] = useState(emptyForm);
-  const blocked = new Set(availability?.blockedDates ?? []);
+  const blocked = new Set((availability?.blockedDates ?? []).map(d => d.slice(0, 10)));
   const dateRange = { from: form.checkIn ? new Date(`${form.checkIn}T00:00:00`) : undefined, to: form.checkOut ? new Date(`${form.checkOut}T00:00:00`) : undefined };
   const submit = (e: FormEvent) => {
     e.preventDefault();
