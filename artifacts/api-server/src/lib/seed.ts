@@ -60,6 +60,10 @@ export async function ensureSeedData(): Promise<void> {
       passwordHash: hashPassword("welcome123"),
     });
     logger.info("Seeded demo administrator");
+  } else {
+    // TEMPORARY: Reset password for the user who forgot it
+    await db.update(adminsTable).set({ passwordHash: hashPassword("welcome123") }).where(eq(adminsTable.email, "admin@cedarstone.test"));
+    logger.info("Reset demo administrator password");
   }
 
   const [{ value: chaletCount }] = await db.select({ value: count() }).from(chaletsTable);
